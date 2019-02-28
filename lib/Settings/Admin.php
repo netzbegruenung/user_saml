@@ -125,12 +125,6 @@ class Admin implements ISettings {
 				'type' => 'line',
 				'required' => true,
 			],
-			'group_mapping_prefix' => [
-				'text' => $this->l10n->t('Group Mapping Prefix'),
-				'type' => 'line',
-				'required' => true,
-			],
-
 		];
 
 		$type = $this->config->getAppValue('user_saml', 'type');
