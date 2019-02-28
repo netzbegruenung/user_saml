@@ -674,8 +674,24 @@ class UserBackend implements IApacheBackend, UserInterface, IUserBackend {
 			}
 
 			if ($newGroups !== null) {
+				$groupPrefix = $this->config->getAppValue('user_saml', 'saml-attribute-mapping-group_mapping_prefix', '');
+				
 				$groupManager = $this->groupManager;
-				$oldGroups = $groupManager->getUserGroupIds($user);
+				$oldGroupsTemp = $groupManager->getUserGroupIds($user);
+				
+				$oldGroups=array();
+				foreach ($oldGroupsTemp as $group) {
+					if (substr($group,0,strlen($groupPrefix))==$groupPrefix) {
+						array_push($oldGroups, $group);
+					}
+				}
+				
+				$newGroupsTemp=array();
+				foreach ($newGroups as $group) {
+					array_push($newGroupsTemp,$groupPrefix.$group);	
+				}
+				
+				$newGroups = $newGroupsTemp;
 
 				$groupsToAdd = array_unique(array_diff($newGroups, $oldGroups));
 				$groupsToRemove = array_diff($oldGroups, $newGroups);
