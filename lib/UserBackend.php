@@ -28,7 +28,6 @@ use OCP\IDBConnection;
 use OCP\ILogger;
 use OCP\IUser;
 use OCP\IUserManager;
-use OCP\IGroupManager;
 use OCP\UserInterface;
 use OCP\IUserBackend;
 use OCP\IConfig;
@@ -47,7 +46,7 @@ class UserBackend implements IApacheBackend, UserInterface, IUserBackend {
 	private $db;
 	/** @var IUserManager */
 	private $userManager;
-	/** @var IGroupManager */
+	/** @var GroupManager */
 	private $groupManager;
 	/** @var \OCP\UserInterface[] */
 	private static $backends = [];
@@ -62,7 +61,7 @@ class UserBackend implements IApacheBackend, UserInterface, IUserBackend {
 	 * @param ISession $session
 	 * @param IDBConnection $db
 	 * @param IUserManager $userManager
-	 * @param IGroupManager $groupManager
+	 * @param GroupManager $groupManager
 	 * @param SAMLSettings $settings
 	 * @param ILogger $logger
 	 */
@@ -682,22 +681,7 @@ class UserBackend implements IApacheBackend, UserInterface, IUserBackend {
 			}
 
 			if ($newGroups !== null) {
-				$groupManager = $this->groupManager;
-				$oldGroups = $groupManager->getUserGroupIds($user);
-
-				$groupsToAdd = array_unique(array_diff($newGroups, $oldGroups));
-				$groupsToRemove = array_diff($oldGroups, $newGroups);
-
-				foreach ($groupsToAdd as $group) {
-					if (!($groupManager->groupExists($group))) {
-						$groupManager->createGroup($group);
-					}
-					$groupManager->get($group)->addUser($user);
-				}
-
-				foreach ($groupsToRemove as $group) {
-					$groupManager->get($group)->removeUser($user);
-				}
+				$this->groupManager->replaceGroups($uid, $newGroups);
 			}
 		}
 	}

@@ -28,6 +28,10 @@ if(OC::$CLI) {
 	$cli = true;
 }
 
+\OC::$server->registerService('SAMLGroupManager', function() {
+    return new OCA\User_SAML\GroupManager(\OC::$server->getDatabaseConnection());
+});
+
 $urlGenerator = \OC::$server->getURLGenerator();
 $l = \OC::$server->getL10N('user_saml');
 $config = \OC::$server->getConfig();
@@ -47,12 +51,15 @@ $userBackend = new \OCA\User_SAML\UserBackend(
 	\OC::$server->getSession(),
 	\OC::$server->getDatabaseConnection(),
 	\OC::$server->getUserManager(),
-	\OC::$server->getGroupManager(),
+	\OC::$server->query('SAMLGroupManager'),
 	$samlSettings,
 	\OC::$server->getLogger()
 );
 $userBackend->registerBackends(\OC::$server->getUserManager()->getBackends());
 OC_User::useBackend($userBackend);
+
+$groupBackend = new \OCA\User_SAML\GroupBackend($config, \OC::$server->query('SAMLGroupManager'));
+\OC::$server->getGroupManager()->addBackend($groupBackend);
 
 // Setting up the one login config may fail, if so, do not catch the requests later.
 $returnScript = false;
