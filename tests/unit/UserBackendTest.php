@@ -21,6 +21,8 @@
 
 namespace OCA\User_SAML\Tests\Settings;
 
+use OCA\User_SAML\GroupDuplicateChecker;
+use OCA\User_SAML\GroupManager;
 use OCA\User_SAML\SAMLSettings;
 use OCA\User_SAML\UserBackend;
 use OCP\IConfig;
@@ -68,6 +70,15 @@ class UserBackendTest extends TestCase   {
 	}
 
 	public function getMockedBuilder(array $mockedFunctions = []) {
+		$groupManager = new GroupManager(
+			$this->db,
+			new GroupDuplicateChecker(
+				$this->config,
+				$this->groupManager,
+				$this->logger
+			)
+		);
+
 		if($mockedFunctions !== []) {
 			$this->userBackend = $this->getMockBuilder(UserBackend::class)
 				->setConstructorArgs([
@@ -76,7 +87,7 @@ class UserBackendTest extends TestCase   {
 					$this->session,
 					$this->db,
 					$this->userManager,
-					$this->groupManager,
+					$groupManager,
 					$this->SAMLSettings,
 					$this->logger
 				])
@@ -89,7 +100,7 @@ class UserBackendTest extends TestCase   {
 				$this->session,
 				$this->db,
 				$this->userManager,
-				$this->groupManager,
+				$groupManager,
 				$this->SAMLSettings,
 				$this->logger
 			);
